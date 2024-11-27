@@ -1,5 +1,9 @@
 import pandas as pd
 import os 
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+from sklearn.preprocessing import MinMaxScaler
+from statsmodels.tsa.seasonal import seasonal_decompose
+import json
 
 folder_path = os.path.join(os.path.dirname(__file__), 'sensores')
 
@@ -88,3 +92,48 @@ def generate_user_tips(results, total_consumption):
     )
 
     return tips
+
+
+import json
+import pandas as pd
+import os
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+from sklearn.preprocessing import MinMaxScaler
+
+def generate_prediction():
+    # Load training and testing datasets
+    powerlytic_train = pd.read_csv(os.path.join(os.path.dirname(__file__), 'powerlytic_train.csv'))
+
+    # Ensure date column is set as index
+    powerlytic_train['date'] = pd.to_datetime(powerlytic_train['date'])
+    powerlytic_train.set_index('date', inplace=True)
+    powerlytic_train = powerlytic_train.asfreq('D').sort_index()
+    powerlytic_train.interpolate(method='linear', inplace=True)
+
+    # Prepare data for SARIMA
+    train_data = powerlytic_train['Appliances'].values
+    scaler = MinMaxScaler()
+    train_scaled = scaler.fit_transform(train_data.reshape(-1, 1))
+
+    # Train SARIMA model
+    sarima_order = (2, 1, 2)
+    seasonal_order = (1, 1, 1, 12)
+    model = SARIMAX(train_scaled, order=sarima_order, seasonal_order=seasonal_order, enforce_stationarity=False)
+    model_fit = model.fit(disp=False)
+
+    # Generate forecast
+    forecast_steps = 30
+    forecast_scaled = model_fit.forecast(steps=forecast_steps)
+    forecast = scaler.inverse_transform(forecast_scaled.reshape(-1, 1)).flatten()
+
+    # Generate forecast dates
+    last_date = powerlytic_train.index[-1]
+    forecast_dates = pd.date_range(start=last_date, periods=forecast_steps + 1, freq='D')[1:]
+
+    # Prepare JSON output
+    prediction_data = [
+        {"date": str(date), "forecast": round(value, 2)}
+        for date, value in zip(forecast_dates, forecast)
+    ]
+
+    return prediction_data

@@ -49,5 +49,13 @@ def generate_tip():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+@app.route('/get_prediction', methods=['GET'])
+def get_prediction():
+    try:
+        data = utils.generate_prediction()
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    
 if __name__ == '__main__':
     app.run(debug=True)
