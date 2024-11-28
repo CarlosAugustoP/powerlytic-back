@@ -193,6 +193,57 @@ def compare_weeks():
         return jsonify({'status': 'success', 'data': data})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+@app.route('/multivariate_regression', methods=['GET'])
+def multivariate_regression():
+    """
+    Realizar regressão multivariada
+    ---
+    responses:
+      200:
+        description: Resultados da regressão multivariada
+      500:
+        description: Erro interno do servidor
+    """
+    try:
+        data = utils.multivariate_regression()
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+@app.route('/generate_multivariate_prediction', methods=['GET'])
+def generate_multivariate_prediction():
+    """
+    Gerar previsão multivariada
+    ---
+    responses:
+      200:
+        description: Previsão multivariada para os próximos dias
+      500:
+        description: Erro interno do servidor
+    """
+    try:
+        data = utils.generate_multivariate_prediction()
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+@app.route('/evaluate_models', methods=['GET'])
+def evaluate_models():
+    """
+    Avaliar modelos de previsão
+    ---
+    responses:
+      200:
+        description: Resultados da avaliação dos modelos
+      500:
+        description: Erro interno do servidor
+    """
+    try:
+        data = utils.evaluate_models()
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
