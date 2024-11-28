@@ -194,23 +194,6 @@ def compare_weeks():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
     
-@app.route('/multivariate_regression', methods=['GET'])
-def multivariate_regression():
-    """
-    Realizar regressão multivariada
-    ---
-    responses:
-      200:
-        description: Resultados da regressão multivariada
-      500:
-        description: Erro interno do servidor
-    """
-    try:
-        data = utils.multivariate_regression()
-        return jsonify({'status': 'success', 'data': data})
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-    
 @app.route('/generate_multivariate_prediction', methods=['GET'])
 def generate_multivariate_prediction():
     """
