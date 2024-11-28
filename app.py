@@ -1,9 +1,23 @@
 from flask import Flask, jsonify, request 
 import utils as utils
 from flasgger import Swagger
+from flask_cors import CORS 
 
 app = Flask(__name__)
+CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 swagger = Swagger(app)
+
+@app.before_request
+def handle_preflight():
+    if request.method == 'OPTIONS':
+        response = app.make_default_options_response()
+        response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        return response
+
 
 @app.route('/correlations', methods=['GET'])
 def get_correlations():
@@ -17,10 +31,8 @@ def get_correlations():
         description: Erro interno do servidor
     """
     try:
-        # Chamar a função analyze_correlations para obter os dados
         correlation_data = utils.analyze_correlations()
 
-        # Converter a matriz de correlação para um dicionário JSON-friendly
         correlation_json = correlation_data.to_dict()
 
         return jsonify({
@@ -111,28 +123,30 @@ def calculate_appliance_contribution():
 
 @app.route('/generate_tip', methods=['GET'])
 def generate_tip():
-    """
-    Gerar dicas para reduzir consumo
-    ---
-    responses:
-      200:
-        description: Dicas baseadas no consumo atual
-      500:
-        description: Erro interno do servidor
-    """
-    try:
-        data = utils.calculate_appliance_contribution(utils.folder_path)
-        results = data['appliance_data']
-        total_consumption = data['total_consumption']
-        
-        tips = utils.generate_user_tips(results, total_consumption)
+  """
+  Gerar dicas para reduzir consumo
+  ---
+  responses:
+    200:
+    description: Dicas baseadas no consumo atual
+    500:
+    description: Erro interno do servidor
+  """
+  try:
+    data = utils.calculate_appliance_contribution(utils.folder_path)
+    results = data['appliance_data']
+    total_consumption = data['total_consumption']
+    
+    tips = utils.generate_user_tips(results, total_consumption)
 
-        return jsonify({
-            'status': 'success',
-            'tips': tips
-        })
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+    return jsonify({
+      'status': 'success',
+      'data': {
+        'tips': tips
+      }
+    })
+  except Exception as e:
+    return jsonify({'status': 'error', 'data': {'message': str(e)}}), 500
 
 @app.route('/get_prediction', methods=['GET'])
 def get_prediction():
