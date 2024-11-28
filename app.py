@@ -150,6 +150,49 @@ def get_prediction():
         return jsonify({'status': 'success', 'data': data})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
-    
+
+@app.route('/compare_weeks', methods=['GET'])
+def compare_weeks():
+    """
+    Comparar consumo entre duas semanas
+    ---
+    parameters:
+      - name: week1
+        in: query
+        type: integer
+        required: true
+        description: Primeira semana (1 a 53)
+      - name: year1
+        in: query
+        type: integer
+        required: true
+        description: Ano da primeira semana
+      - name: week2
+        in: query
+        type: integer
+        required: true
+        description: Segunda semana (1 a 53)
+      - name: year2
+        in: query
+        type: integer
+        required: true
+        description: Ano da segunda semana
+    responses:
+      200:
+        description: Comparação de consumo entre os meses especificados
+      500:
+        description: Erro interno do servidor
+    """
+    try:
+        week1 = int(request.args.get('week1'))
+        year1 = int(request.args.get('year1'))
+        week2 = int(request.args.get('week2'))
+        year2 = int(request.args.get('year2'))
+
+        data = utils.compare_weeks(week1, year1, week2, year2)
+        return jsonify({'status': 'success', 'data': data})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)

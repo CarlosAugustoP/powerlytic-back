@@ -155,3 +155,35 @@ def generate_prediction():
     ]
 
     return prediction_data
+
+def compare_weeks(week1, year1, week2, year2):
+     # Carregar os dados
+    df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'powerlytic.csv'))
+    df['date'] = pd.to_datetime(df['date'])
+    df['year'] = df['date'].dt.year
+    df['week'] = df['date'].dt.isocalendar().week
+
+    # Calcular o consumo total por semana
+    weekly_consumption = df.groupby(['year', 'week'])[['Appliances', 'lights']].sum().reset_index()
+    weekly_consumption['total_consumption'] = weekly_consumption['Appliances'] + weekly_consumption['lights']
+
+    # Filtrar dados para cada semana
+    week1_data = weekly_consumption[(weekly_consumption['week'] == week1) & (weekly_consumption['year'] == year1)]
+    week2_data = weekly_consumption[(weekly_consumption['week'] == week2) & (weekly_consumption['year'] == year2)]
+
+    if week1_data.empty or week2_data.empty:
+        raise ValueError('Uma das semanas especificadas não possui dados.')
+
+    # Obter consumo total
+    week1_consumption = int(week1_data['total_consumption'].values[0])
+    week2_consumption = int(week2_data['total_consumption'].values[0])
+
+    # Calcular a variação percentual
+    percentage_change = ((week2_consumption - week1_consumption) / week1_consumption) * 100
+
+    # Retornar os resultados
+    return {
+        'week1': {'year': year1, 'week': week1, 'total_consumption': week1_consumption},
+        'week2': {'year': year2, 'week': week2, 'total_consumption': week2_consumption},
+        'percentage_change': percentage_change
+    }
