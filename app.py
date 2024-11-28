@@ -5,6 +5,32 @@ from flasgger import Swagger
 app = Flask(__name__)
 swagger = Swagger(app)
 
+@app.route('/correlations', methods=['GET'])
+def get_correlations():
+    """
+    Obter correlações entre variáveis
+    ---
+    responses:
+      200:
+        description: Matriz de correlação entre variáveis no dataset
+      500:
+        description: Erro interno do servidor
+    """
+    try:
+        # Chamar a função analyze_correlations para obter os dados
+        correlation_data = utils.analyze_correlations()
+
+        # Converter a matriz de correlação para um dicionário JSON-friendly
+        correlation_json = correlation_data.to_dict()
+
+        return jsonify({
+            'status': 'success',
+            'data': correlation_json
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
 @app.route('/hourly_consumption', methods=['GET'])
 def get_hourly_consumption():
     """

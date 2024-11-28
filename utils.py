@@ -1,4 +1,7 @@
+import sys
+from matplotlib import pyplot as plt
 import pandas as pd
+import seaborn as sns
 import os 
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.preprocessing import MinMaxScaler
@@ -6,6 +9,28 @@ from statsmodels.tsa.seasonal import seasonal_decompose
 import json
 
 folder_path = os.path.join(os.path.dirname(__file__), 'sensores')
+
+def analyze_correlations():
+    """
+    Gera e visualiza a matriz de correlação para as variáveis relevantes.
+    """
+
+    df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'powerlytic_train.csv'))
+
+    # Selecionar variáveis relevantes
+    variables = [
+        'Appliances', 'lights', 'T1', 'RH_1', 'T2', 'RH_2', 'T3', 'RH_3',
+        'T_out', 'RH_out', 'Windspeed', 'Visibility', 'Tdewpoint'
+    ]
+
+    # Filtrar apenas as colunas relevantes
+    df_filtered = df[variables]
+
+    # Calcular matriz de correlação
+    correlation_matrix = df_filtered.corr()
+
+    # Retornar os dados da correlação para uso adicional
+    return correlation_matrix
 
 def spend_by_hour():
     df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'powerlytic.csv'))
@@ -92,13 +117,6 @@ def generate_user_tips(results, total_consumption):
     )
 
     return tips
-
-
-import json
-import pandas as pd
-import os
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-from sklearn.preprocessing import MinMaxScaler
 
 def generate_prediction():
     # Load training and testing datasets
